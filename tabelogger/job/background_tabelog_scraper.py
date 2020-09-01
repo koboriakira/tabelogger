@@ -31,19 +31,23 @@ class BackgroundTabelogScraper:
             job_id: UUID,
             url: str,
             data_object: DataObject,
+            logging,
             limit_page_count: int = 1) -> None:
         self.job_id: UUID = job_id
         self.url: str = url
         self.limit_page_count: int = limit_page_count
         self.data_object: DataObject = data_object
+        self.logger = logging.get_logger(__name__)
 
     def __call__(self):
         jobs[self.job_id] = self
         try:
             stores = self.data_object.select_all()
             ignore_urls = stores.to_urls()
+
+            print(f'{self.job_id}: scraping')
             scraping_result: Tuple[Dict[Text, Any]] = scrape(
-                target_url="https://tabelog.com/tokyo/A1315/A131501/R1644/rstLst/1/?svd=20200313&svt=1900&svps=2",
+                target_url=self.url,
                 limit_page_count=self.limit_page_count,
                 ignore_urls=ignore_urls)
 
@@ -51,7 +55,7 @@ class BackgroundTabelogScraper:
             for store_dict in scraping_result:
                 store = _to_store(store_dict)
                 self.data_object.insert(store)
-                print(f'insert {store.name}')
+                print(f'{self.job_id}: insert {store.name}')
 
                 # if self.is_cancelled:
                 #     del jobs[self.job_id]
@@ -60,7 +64,7 @@ class BackgroundTabelogScraper:
         finally:
             # データ管理を閉じる
             self.data_object.close()
-            print('finished scraping')
+            print(f'{self.job_id}: finish')
 
 
 jobs: Dict[UUID, BackgroundTabelogScraper] = {}

@@ -1,8 +1,10 @@
+from tabelogger.adapter.logger.fastapi_logging import FastapiLogging
 from tabelogger.model.store import Stores
 import uuid
 from fastapi import FastAPI, BackgroundTasks
 from tabelogger.job.background_tabelog_scraper import BackgroundTabelogScraper
 from tabelogger.adapter.data_object.mysql_data_object import MySqlDataObject
+
 app = FastAPI()
 
 
@@ -13,6 +15,9 @@ def read_root():
 
 @app.get("/recommend/{navigation}")
 def recommend(navigation: str, min_rate: float = 3.0):
+    # logger = FastapiLogging().get_logger(__name__)
+    # logger.info("recommendを実行")
+    print(f"[recommend] navigation:{navigation}, min_rate:{min_rate}")
     stores: Stores = MySqlDataObject().search(
         navigation=navigation, min_rate=min_rate)
     return stores
@@ -25,6 +30,7 @@ def scrape(background_tasks: BackgroundTasks, url: str, limit_page_count: str):
         job_id=job_id,
         url=url,
         limit_page_count=int(limit_page_count),
+        logging=FastapiLogging(),
         data_object=MySqlDataObject(),
     )
     background_tasks.add_task(t)

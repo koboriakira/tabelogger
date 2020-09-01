@@ -18,6 +18,7 @@ class MySqlDataObject(DataObject):
     def __init__(self) -> None:
         self.conn = connect(
             host=mysql_database_config['host'],
+            port=mysql_database_config['port'] if 'port' in mysql_database_config else 3306,
             db=mysql_database_config['db'],
             user=mysql_database_config['user'],
             passwd=mysql_database_config['passwd'],

@@ -1,4 +1,4 @@
-CREATE TABLE `stores` (
+CREATE TABLE tabelogger.stores (
   `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
   `name` varchar(1000),
   `navigation` varchar(1000),

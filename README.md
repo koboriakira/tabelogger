@@ -1,14 +1,28 @@
-
 ## Docker上で実行する場合
+
+Docker Composeで起動する
+
+```bash
+docker-compose up --build
+```
 
 Dockerコンテナを起動。
 
 ```bash
+# イメージ作成（プロジェクト直下で）
+docker build -t tabelogger-web -f ./docker/web/Dockerfile .
+docker build -t tabelogger-mysql -f ./docker/mysql/Dockerfile .
+
+# Dockerネットワークを作成
+docker network create tabelogger-network
+
 # 起動
-docker run -d --restart=always -p 12345:8000 --name tabelogger tabelogger 
+docker run -d --network=tabelogger-network --restart=always -p 12345:8000 --name tabelogger tabelogger-web
+docker run -d --network=tabelogger-network --rm -e MYSQL_ALLOW_EMPTY_PASSWORD=yes --name=tabelogger-db tabelogger-mysql
 
 # 開発用
-docker run -it --rm -v $(pwd):/work -p 12345:8000 tabelogger
+docker run -it --network=tabelogger-network --rm -v $(pwd):/work -p 12345:8000 tabelogger-web
+docker run -it --rm -e MYSQL_ALLOW_EMPTY_PASSWORD=yes --name=tabelogger-db tabelogger-mysql bash
 ```
 
 つぎにサーバを起動。

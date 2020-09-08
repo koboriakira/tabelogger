@@ -1,5 +1,11 @@
 version: '3'
 services:
+  db:
+    build:
+      context: .
+      dockerfile: ./docker/mysql/Dockerfile
+    volumes:
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
   web:
     build:
       context: .
@@ -8,9 +14,3 @@ services:
       - '12345:8000'
     volumes:
       - ./tabelogger:/work/tabelogger
-  mysqldb:
-    build:
-      context: .
-      dockerfile: ./docker/mysql/Dockerfile
-    volumes:
-      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf

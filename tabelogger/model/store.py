@@ -1,19 +1,38 @@
+from __future__ import annotations
+from abc import ABCMeta, abstractmethod
 import dataclasses
 from typing import List
+from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
 
 
-@dataclasses.dataclass(frozen=True)
-class Store:
-    name: str
-    rate: float
-    address: str
-    address_image_url: str
-    url: str
-    navigation: str
+class StoreRepository(object):
+    __metaclass__ = ABCMeta
 
-    def __str__(self):
-        return 'name:' + self.name + ' rate:' + \
-            str(self.rate) + ' url:' + self.url
+    @abstractmethod
+    def search(self, urls: List[str]) -> Stores:
+        pass
+
+    @abstractmethod
+    def select_all(self) -> Stores:
+        pass
+
+    @abstractmethod
+    def insert(self, store: Store) -> None:
+        pass
+
+
+class Store(Base):
+    __tablename__ = 'stores'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(1000))
+    navigation = Column(String(1000))
+    rate = Column(Float)
+    address = Column(String(1000))
+    address_image_url = Column(String(2083))
+    url = Column(String(767))
 
     def is_high_rating(self) -> bool:
         return self.rate >= 3.5 and self.rate <= 5.0
@@ -22,15 +41,8 @@ class Store:
         return self.address_image_url.split(
             "&center=")[1].split("&style=")[0].split(",")
 
-    def to_entity(self):
-        return {
-            'name': self.name,
-            'rate': self.rate,
-            'address': self.address,
-            'address_image_url': self.address_image_url,
-            'url': self.url,
-            'navigation': self.navigation
-        }
+    def __str__(self):
+        return self.name
 
 
 @dataclasses.dataclass

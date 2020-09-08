@@ -1,5 +1,11 @@
 ## Docker上で実行する場合
 
+Docker Composeで起動する
+
+```bash
+docker-compose up --build
+```
+
 Dockerコンテナを起動。
 
 ```bash

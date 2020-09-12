@@ -29,13 +29,14 @@ def recommend(
     navigation: str = '',
     latitude: float = 0,
     longitude: float = 0,
+    distance: int = 0,
     min_rate: float = 3.0,
 ):
     print(
         f"[recommend] navigation:{navigation}, min_rate:{min_rate}, latitude:{latitude}, longitude:{longitude}")
     stores: Stores = StoreMysqlRepository().search(
         navigation=navigation, min_rate=min_rate)
-    stores = stores.filter_geo_location(latitude, longitude)
+    stores = stores.filter_geo_location(latitude, longitude, distance)
     print(stores)
     return stores
 

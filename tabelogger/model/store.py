@@ -58,7 +58,14 @@ class Stores:
     def __post_init__(self):
         self.size = len(self.stores)
 
-    def filter_geo_location(self, latitude: float, longitude: float) -> Stores:
+    def filter_geo_location(
+            self,
+            latitude: float,
+            longitude: float,
+            distance) -> Stores:
+        """
+        指定された経度・緯度と距離をもとに、対象を店をしぼります
+        """
         if not latitude:
             return self
         if not longitude:
@@ -69,7 +76,7 @@ class Stores:
         for store in self.stores:
             dis = geodesic(my_pos, store.pos()).m
             print('distance:', dis)
-            if dis < 200:
+            if dis < distance:
                 result.append(store)
         return Stores(result)
 

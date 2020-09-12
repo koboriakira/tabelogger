@@ -30,7 +30,7 @@ def recommend(
     latitude: float = 0,
     longitude: float = 0,
     distance: int = 0,
-    min_rate: float = 3.0,
+    min_rate: float = 0,
 ):
     print(
         f"[recommend] navigation:{navigation}, min_rate:{min_rate}, latitude:{latitude}, longitude:{longitude}")

@@ -1,10 +1,11 @@
-import uuid
+from tabelogger.adapter.repository.store.job_mysql_repository import JobMysqlRepository
 from fastapi import FastAPI, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from tabelogger.job.background_tabelog_scraper import BackgroundTabelogScraper
 from tabelogger.adapter.repository.store.store_mysql_repository import StoreMysqlRepository
 from tabelogger.adapter.logger.fastapi_logging import FastapiLogging
 from tabelogger.model.store import Stores
+from tabelogger.model.job import Job
 
 app = FastAPI()
 
@@ -23,29 +24,40 @@ def read_root():
     return {"Hello": "World"}
 
 
-@app.get("/recommend/{navigation}")
-def recommend(navigation: str, min_rate: float = 3.0):
-    print(f"[recommend] navigation:{navigation}, min_rate:{min_rate}")
+@app.get("/recommend")
+def recommend(
+    navigation: str = '',
+    latitude: float = 0,
+    longitude: float = 0,
+    min_rate: float = 3.0,
+):
+    print(
+        f"[recommend] navigation:{navigation}, min_rate:{min_rate}, latitude:{latitude}, longitude:{longitude}")
     stores: Stores = StoreMysqlRepository().search(
         navigation=navigation, min_rate=min_rate)
+    stores = stores.filter_geo_location(latitude, longitude)
     print(stores)
     return stores
 
 
-@app.get("/scrape")
-def scrape(background_tasks: BackgroundTasks, url: str, limit_page_count: str):
-    job_id: uuid.UUID = uuid.uuid1()
+@ app.get("/scrape")
+def scrape(
+        background_tasks: BackgroundTasks,
+        url: str,
+        limit_page_count: int = 1):
+    job = Job.create(url, limit_page_count)
     t = BackgroundTabelogScraper(
-        job_id=job_id,
-        url=url,
-        limit_page_count=int(limit_page_count),
+        job=job,
         logging=FastapiLogging(),
+        job_repository=JobMysqlRepository(),
         store_repository=StoreMysqlRepository(),
     )
     background_tasks.add_task(t)
+    return job
 
-    return {
-        "job_id": job_id,
-        "url": url,
-        "limit_page_count": limit_page_count
-    }
+
+@ app.get("/jobs")
+def jobs():
+    jobs = JobMysqlRepository().select_all()
+    print(jobs)
+    return jobs

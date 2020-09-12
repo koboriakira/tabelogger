@@ -1,9 +1,10 @@
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 import dataclasses
-from typing import List
+from typing import List, Tuple
 from sqlalchemy import Column, Integer, String, Float
 from sqlalchemy.ext.declarative import declarative_base
+from geopy.distance import geodesic
 
 Base = declarative_base()
 
@@ -37,9 +38,13 @@ class Store(Base):
     def is_high_rating(self) -> bool:
         return self.rate >= 3.5 and self.rate <= 5.0
 
-    def latitude_longitude(self) -> List[str]:
-        return self.address_image_url.split(
+    def pos(self) -> Tuple[float]:
+        """
+        経度、緯度のタプルを返却します
+        """
+        param: List[str] = self.address_image_url.split(
             "&center=")[1].split("&style=")[0].split(",")
+        return tuple(map(lambda el: float(el), param))
 
     def __str__(self):
         return self.name
@@ -47,7 +52,26 @@ class Store(Base):
 
 @dataclasses.dataclass
 class Stores:
+    size: int = dataclasses.field(default=0, init=False)
     stores: List[Store]
+
+    def __post_init__(self):
+        self.size = len(self.stores)
+
+    def filter_geo_location(self, latitude: float, longitude: float) -> Stores:
+        if not latitude:
+            return self
+        if not longitude:
+            return self
+
+        result: List[Store] = []
+        my_pos = (latitude, longitude)
+        for store in self.stores:
+            dis = geodesic(my_pos, store.pos()).m
+            print('distance:', dis)
+            if dis < 200:
+                result.append(store)
+        return Stores(result)
 
     def to_urls(self) -> List[str]:
         return list(map(lambda s: s.url, self.stores))

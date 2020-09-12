@@ -6,6 +6,8 @@ services:
       dockerfile: ./docker/mysql/Dockerfile
     volumes:
       - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+    security_opt:
+      - seccomp:unconfined
   web:
     build:
       context: .
